@@ -100,14 +100,34 @@ async function run() {
       res.send(result);
     });
     
-    // get all applications
-    app.get("/applications", async (req, res) => {
-      const applications = await applicationCollection.find().toArray();
+    
+    // get some data using query
+    app.get('/applications', async (req, res) => {
+      const email = req.query.email;
+      const query = { applicant_email: email };
+      const applications = await applicationCollection.find(query).toArray();
+      for(const application of applications){
+        const query = { _id: new ObjectId(application.job_id) };
+        const job = await jobCollection.findOne(query);
+        if(job){
+          application.job_title = job.title;
+          application.company_name = job.company;
+          application.company_logo = job.company_logo;
+        }
+      }
       res.send(applications);
     });
 
+    // get single application
+    app.get('/applications/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const application = await applicationCollection.findOne(query);
+      res.send(application);
+    });
 
-    
+
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
