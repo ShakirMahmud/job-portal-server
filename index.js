@@ -35,7 +35,12 @@ async function run() {
 
     // get all jobs
     app.get("/jobs", async (req, res) => {
-      const jobs = await jobCollection.find().toArray();
+      const email = req.query.email;
+      let query = {};
+      if(email){
+        query = { hr_email: email };
+      }
+      const jobs = await jobCollection.find(query).toArray();
       res.send(jobs);
     });
 
@@ -48,14 +53,14 @@ async function run() {
     });
 
     // post job
-    app.post("/job", async (req, res) => {
+    app.post("/jobs", async (req, res) => {
       const job = req.body;
       const result = await jobCollection.insertOne(job);
       res.send(result);
     });
 
     // update job
-    app.put("/job/:id", async (req, res) => {
+    app.put("/jobs/:id", async (req, res) => {
       const id = req.params.id;
       const job = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -97,6 +102,23 @@ async function run() {
     app.post("/applications", async (req, res) => {
       const application = req.body;
       const result = await applicationCollection.insertOne(application);
+      const id = application.job_id;
+      const query = { _id: new ObjectId(id) };
+      const job = await jobCollection.findOne(query);
+      let newCount = 0;
+      if(job.applicationCount){
+        newCount = job.applicationCount + 1;
+      }else{
+        newCount = 1;
+      }
+      // update application count
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          applicationCount: newCount,
+        },
+      }
+      const updateResult = await jobCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
     
@@ -125,12 +147,19 @@ async function run() {
       const application = await applicationCollection.findOne(query);
       res.send(application);
     });
+    app.get('/applications/jobs/:job_id', async (req, res) => {
+      const id = req.params.job_id;
+      const query = { job_id: id };
+      const application = await applicationCollection.find(query).toArray();
+      res.send(application);
+    });
 
     // delete application
     app.delete('/applications/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await applicationCollection.deleteOne(query);
+     
       res.send(result);
     });
 
