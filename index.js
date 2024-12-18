@@ -163,6 +163,20 @@ async function run() {
       res.send(result);
     });
 
+    app.patch('/applications/:id', async (req, res) => {
+      const id = req.params.id;
+      const application = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: application.status,
+        },
+      }
+      const result = await applicationCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    
 
 
   } finally {
