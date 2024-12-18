@@ -163,7 +163,9 @@ async function run() {
       const email = req.query.email;
       const query = { applicant_email: email };
 
-      // console.log(req.cookies);
+      if (req.decoded.email !== email) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
 
       const applications = await applicationCollection.find(query).toArray();
       for (const application of applications) {
