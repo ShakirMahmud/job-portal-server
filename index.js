@@ -12,8 +12,8 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173",
-      "https://job-portal-shakir.vercel.app/",
-      "https://job-portal-server-shakir.vercel.app/"
+      "https://job-portal-shakir.vercel.app",
+      "https://job-portal-server-shakir.vercel.app"
     ],
     credentials: true,
   })
@@ -66,7 +66,8 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: false, //false when at localhost. true when at production
+          secure: process.env.NODE_ENV === "production", //false when at localhost. true when at production
+          
         })
         .send({ success: true });
     });
@@ -75,7 +76,7 @@ async function run() {
     app.post("/logout", (req, res) => {
       res.clearCookie("token",{
         httpOnly: true,
-        secure: false, //false when at localhost. true when at production
+        secure: process.env.NODE_ENV === "production", //false when at localhost. true when at production
       }).send({ success: true });
     });
 
