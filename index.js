@@ -68,6 +68,14 @@ async function run() {
         .send({ success: true });
     });
 
+    // clear cookie when logout
+    app.post("/logout", (req, res) => {
+      res.clearCookie("token",{
+        httpOnly: true,
+        secure: false, //false when at localhost. true when at production
+      }).send({ success: true });
+    });
+
     // get all jobs
     app.get("/jobs", async (req, res) => {
       const email = req.query.email;
